@@ -1,6 +1,6 @@
 var admin = require('firebase-admin');
 
-
+const path = require('path');
 const express = require('express');
 const app = express();
 const port = 3000;
@@ -10,15 +10,15 @@ const bodyParser = require('body-parser');
 
 const shorthash = require('short-hash');
 
+
+app.set('view engine', 'ejs');
+app.use(express.static(path.join(__dirname, 'public')));
+app.engine('html', require('ejs').renderFile);
 app.use( bodyParser.json() );       // to support JSON-encoded bodies
 app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
   extended: true
 })); 
-
-app.set('views', __dirname + '/res');
-app.engine('html', require('ejs').renderFile);
-app.set('view engine', 'ejs');
-
+//app.use(app.router);
 
 const home_url = "http://localhost:3000/";
 
@@ -37,16 +37,21 @@ app.use(function (req, res, next) {
   res.locals.url = req.originalUrl;
   res.locals.host = req.get('host');
   res.locals.protocol = req.protocol;
-  res.header('Content-Type', 'application/json');
+  res.header('Content-Type','application/json');
+  console.log("REACHED");
   next();
 });
 
 app.get('/', (req, res) => {
+  // res.writeHead(200,{'Content-Type':'text/html'});
+  res.header('Content-Type','text/html');
   res.render('index.html')
 })
 
 app.post('/generate',(req,res) => {
+console.log("Reached here")
 //generates a hashed URL
+console.log(req.body);
 
 //get the url
 const original_url = req.body.url;
@@ -57,13 +62,15 @@ const hash = shorthash(original_url)+"";
 //Store value in firebase
 var ref = db.ref("/hash/").set({[hash]:original_url})
 
+console.log("Sending response");
 res.send(JSON.stringify({hash:home_url+hash}))
 
 })
 
 app.get('*',(req,res)=>{
+if(req.url ==undefined)
+  next();
 var full_url= res.locals.url;
-
 //get the hashcode
 var hash = full_url.split('/')[1];
 console.log(hash)

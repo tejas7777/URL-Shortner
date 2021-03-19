@@ -48,3 +48,7 @@ table {
     padding: 10px;
     height:50%;
 }
+
+.display{
+	display: none;
+}

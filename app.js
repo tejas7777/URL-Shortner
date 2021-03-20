@@ -18,7 +18,6 @@ app.use( bodyParser.json() );       // to support JSON-encoded bodies
 app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
   extended: true
 })); 
-//app.use(app.router);
 
 const home_url = "http://localhost:3000/";
 
@@ -34,15 +33,12 @@ const db = admin.database();
 
 // Use middleware to set the default Content-Type
 app.use(function (req, res, next) {
-  // res.locals.url = req.originalUrl;
-  // res.locals.host = req.get('host');
-  // res.locals.protocol = req.protocol;
   res.header('Content-Type','application/json');
   next();
 });
 
+//Default route
 app.get('/', (req, res) => {
-  // res.writeHead(200,{'Content-Type':'text/html'});
   res.header('Content-Type','text/html');
   res.render('index.html')
 })
@@ -55,7 +51,7 @@ console.log(req.body);
 //get the url
 const original_url = req.body.url;
 
-//console.log(nanoid(req.body.message));
+//Generate hash of the url
 const hash = shorthash(original_url)+"";
 
 //Store value in firebase
@@ -67,12 +63,8 @@ res.send(JSON.stringify({hash:home_url+hash}))
 })
 
 app.get('/:hash',(req,res)=>{
-// if(req.url ==undefined)
-//   next();
-// var full_url= res.locals.url;
-var hash = req.params.hash;
 //get the hashcode
-// var hash = full_url.split('/')[1];
+var hash = req.params.hash;
 console.log(hash)
 
 //read the hash key value pair from firebase
@@ -87,14 +79,12 @@ var ref = db.ref('/hash').once('value')
                   })
                   return original_url;
                 }).then((original_url)=>{
+                  //redirect to the original url
                   res.redirect(original_url);
                 })
            
 });
 
-// app.get('/:hash',(req,res)=>{
-// console.log(req.params.hash);
-// });
 
 app.listen(port, () => {
   console.log(`Example app listening at http://localhost:${port}`)

@@ -34,11 +34,10 @@ const db = admin.database();
 
 // Use middleware to set the default Content-Type
 app.use(function (req, res, next) {
-  res.locals.url = req.originalUrl;
-  res.locals.host = req.get('host');
-  res.locals.protocol = req.protocol;
+  // res.locals.url = req.originalUrl;
+  // res.locals.host = req.get('host');
+  // res.locals.protocol = req.protocol;
   res.header('Content-Type','application/json');
-  console.log("REACHED");
   next();
 });
 
@@ -67,12 +66,13 @@ res.send(JSON.stringify({hash:home_url+hash}))
 
 })
 
-app.get('*',(req,res)=>{
-if(req.url ==undefined)
-  next();
-var full_url= res.locals.url;
+app.get('/:hash',(req,res)=>{
+// if(req.url ==undefined)
+//   next();
+// var full_url= res.locals.url;
+var hash = req.params.hash;
 //get the hashcode
-var hash = full_url.split('/')[1];
+// var hash = full_url.split('/')[1];
 console.log(hash)
 
 //read the hash key value pair from firebase
@@ -92,6 +92,9 @@ var ref = db.ref('/hash').once('value')
            
 });
 
+// app.get('/:hash',(req,res)=>{
+// console.log(req.params.hash);
+// });
 
 app.listen(port, () => {
   console.log(`Example app listening at http://localhost:${port}`)

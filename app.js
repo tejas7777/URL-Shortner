@@ -19,7 +19,7 @@ app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
   extended: true
 })); 
 
-const home_url = "http://localhost:3000/";
+const home_url = "http://localhost:3000/re/";
 
 const serviceAccount = require("./ServiceAccountKey.json");
 
@@ -62,7 +62,7 @@ res.send(JSON.stringify({hash:home_url+hash}))
 
 })
 
-app.get('/:hash',(req,res)=>{
+app.get('/re/:hash',(req,res)=>{
 //get the hashcode
 var hash = req.params.hash;
 console.log(hash)

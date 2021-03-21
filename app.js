@@ -23,7 +23,7 @@ app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
   extended: true
 })); 
 
-const home_url = "http://localhost:3000/re/";
+//const home_url = "http://localhost:3000/re/";
 
 const serviceAccount = require("./ServiceAccountKey.json");
 
@@ -50,19 +50,20 @@ app.get('/', (req, res) => {
 app.post('/generate',(req,res) => {
 console.log("Reached here")
 //generates a hashed URL
-console.log(req.body);
 
 //get the url
 const original_url = req.body.url;
 
 //Generate hash of the url
-const hash = shorthash(original_url)+"";
+const hash = (shorthash(original_url)+"").slice(4);
 
 //Store value in firebase
 var ref = db.ref("/hash/").set({[hash]:original_url})
 
+var base_url = req.protocol+"://"+req.headers.host+"/re/";
+console.log(base_url)
 console.log("Sending response");
-res.send(JSON.stringify({hash:home_url+hash}))
+res.send(JSON.stringify({hash:base_url+hash}))
 
 })
 

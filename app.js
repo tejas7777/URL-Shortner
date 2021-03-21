@@ -4,16 +4,20 @@ const path = require('path');
 const express = require('express');
 const app = express();
 const port = 3000;
+const localh = '127.0.0.1'
+//Cache
+const responseTime = require('response-time')
+const axios = require('axios');
+const redis = require('redis');
 
-
-const bodyParser = require('body-parser');
+const client = redis.createClient(6379);
 
 const shorthash = require('short-hash');
-
 
 app.set('view engine', 'ejs');
 app.use(express.static(path.join(__dirname, 'public')));
 app.engine('html', require('ejs').renderFile);
+const bodyParser = require('body-parser');
 app.use( bodyParser.json() );       // to support JSON-encoded bodies
 app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
   extended: true
@@ -67,21 +71,45 @@ app.get('/re/:hash',(req,res)=>{
 var hash = req.params.hash;
 console.log(hash)
 
-//read the hash key value pair from firebase
-var ref = db.ref('/hash').once('value')
-                .then((snapshot)=>{
+client.on('connect', function() {
+  console.log('cache connected');
+}).on('error', function (error) {
+  console.log(error);
+});
+
+//Check if key is in cache
+client.exists(hash, function(err, reply) {
+  if (reply===0) {
+    //Doesn't exist, call fireabse
+    //read the hash key value pair from firebase
+      var ref = db.ref('/hash').once('value')
+              .then((snapshot)=>{
                   var values = snapshot.val();
                   var original_url;
                   snapshot.forEach((item)=>{
-                    if(item.key==hash){
+                  if(item.key==hash){
                       original_url = item.val();
+                      console.log(original_url);
+                      //Set redis key value
+                      client.set(hash,original_url);
                     }
                   })
                   return original_url;
                 }).then((original_url)=>{
                   //redirect to the original url
+                  console.log('original url',original_url)
                   res.redirect(original_url);
                 })
+        } else {
+          //redirect
+          
+          client.get(hash,(err,reply)=>{
+            res.redirect(reply);
+          }) 
+      }
+});
+
+
            
 });
 
